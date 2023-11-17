@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Crossy Road</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" href="./favicon.ico">
+  
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-image: url("https://i.pinimg.com/236x/cd/c8/fa/cdc8fac0ca0434d7db87d97bda4aaba7.jpg");
+    }
+
+    #title {
+      font-size: 24px;
+      margin-top: 50px;
+      margin-bottom: 20px;
+      color: black;
+    }
+
+    #webcam-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 400px;
+      border: 2px solid #000; 
+      padding: 10px; 
+      border-radius: 10px; 
+      box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5); 
+    }
+
+    #blanck {
+      margin-top: 10px;
+    }
+
+    #webcam {
+      width: 250px; 
+      height: 200px;
+    }
+
+    .image-table {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .image-table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .image-table td {
+      padding: 10px;
+      border: 1px solid #000;
+      text-align: center;
+      width: 20%;
+    }
+
+    .image-table img {
+      max-width: 100px; /* 이미지의 최대 너비 설정 */
+      max-height: 100px; /* 이미지의 최대 높이 설정 */
+    }
+
+    .image-table p {
+      margin: 0;
+      font-size: 12px;
+}
+
+
+  </style>
+  <div class="container">
+    <div id="webcam-container">
+      <div id="title">Using Teachable Machine, Cross Road</div>
+      <div><canvas id="canvas" id="webcam"></canvas></div>
+    </div>
+    <div class="image-table">
+      <table>
+        <tr>
+          <td>
+            <img src="forward.png" alt="Image 1">
+            <p>forward</p>
+          </td>
+          <td>
+            <img src="backward.png" alt="Image 2">
+            <p>backward</p>
+          </td>
+          <td>
+            <img src="left.png" alt="Image 3">
+            <p>left</p>
+          </td>
+          <td>
+            <img src="right.png" alt="Image 4">
+            <p>right</p>
+          </td>
+          <td>
+            <img src="hold.png" alt="Image 5">
+            <p>hold</p>
+          </td>
+        </tr>
+    </div>
+  </div>
+  <div id="label-container"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8/dist/teachablemachine-pose.min.js"></script>
+  <script src="./config.js"></script>
+  <script type="text/javascript">
+      const URL = MODEL_URL;
+      let model, webcam, ctx, labelContainer, maxPredictions;
+      let captureInterval = 400; // 0.4초에 한 번 캡쳐하도록 조정
+      let lastCaptureTime = 0;
+
+  async function init() { // 웹페이지 로드될 때 실행되는 초기화 함수, 모델 로드하고 웹캠 설정
+      const modelURL = URL + "model.json";
+      const metadataURL = URL + "metadata.json";
+
+      model = await tmPose.load(modelURL, metadataURL);
+      maxPredictions = model.getTotalClasses();
+
+      const size = 200;
+      const flip = true; 
+      webcam = new tmPose.Webcam(size, size, flip); // width, height, flip
+      await webcam.setup(); 
+      await webcam.play();
+
+      const canvas = document.getElementById("canvas");
+      canvas.width = size; canvas.height = size;
+      ctx = canvas.getContext("2d");
+      labelContainer = document.getElementById("label-container");
+      for (let i = 0; i < maxPredictions; i++) { 
+          labelContainer.appendChild(document.createElement("div"));
+      }
+
+      lastCaptureTime = Date.now();
+
+      window.requestAnimationFrame(loop);
+  }
+
+  async function loop(timestamp) { //프레임 업데이트
+      webcam.update(); // update the webcam frame
+      const currentTime = Date.now();
+
+      // 모션 결과 확인 (0.4초 시간마다 새로운 동작 감지)
+      if (currentTime - lastCaptureTime >= captureInterval) {
+          await predict();
+          lastCaptureTime = currentTime;
+      }
+
+      window.requestAnimationFrame(loop);
+  }
+
+  init();
+
+
+
+
+    async function predict() {
+    // Prediction #1: 웹캠에서 현재 프레임 가져와 사람 포즈 추정
+    const { pose, posenetOutput } = await model.estimatePose(webcam.canvas);
+    // Prediction 2: 추정된 포즈 정보를 모델에 입력으로 주고 모델로부터 동작 예측
+    const prediction = await model.predict(posenetOutput);
+
+    let maxProbability = 0; // 예측된 클래스 중 최대 확률 추적
+    let maxClassIndex = -1; // 최대 확률을 갖는 클래스 인덱스 추적
+    for (let i = 0; i < maxPredictions; i++) { // 예측 결과 확인
+        if (prediction[i].probability > maxProbability) {
+            maxProbability = prediction[i].probability;
+            maxClassIndex = i;
+        }
+    }
+
+    // 감지된 클래스의 최대 확률이 0.7 이상이면 동작 실행
+    if (maxProbability >= 0.7) {
+        switch (maxClassIndex) {
+            case 0: // 'forward' class
+                move('forward');
+                break;
+            case 1: // 'backward' class
+                move('backward');
+                break;
+            case 2: // 'left' class
+                move('left');
+                break;
+            case 3: // 'right' class
+                move('right');
+                break;
+            case 4:
+                move('hold');
+                break;
+            // 필요한 경우 다른 클래스에 대한 추가 case를 추가할 수 있습니다.
+        }
+    }
+
+    // finally draw the poses
+    drawPose(pose);
+}
+
+
+    function drawPose(pose) {
+        if (webcam.canvas) {
+            ctx.drawImage(webcam.canvas, 0, 0);
+            // draw the keypoints and skeleton
+            if (pose) {
+                const minPartConfidence = 0.5;
+                tmPose.drawKeypoints(pose.keypoints, minPartConfidence, ctx);
+                tmPose.drawSkeleton(pose.keypoints, minPartConfidence, ctx);
+            }
+        }
+    }
+</script>
+
+  
+  <script src="https://kit.fontawesome.com/622afd0c30.js"></script>
+
+</head>
+<body>
+<div id="counter">0</div>
+    
+<div id="controls">
+  <div>
+    <button id="forward">
+      <svg width="30" height="30" viewBox="0 0 10 10">
+        <g transform="rotate(0, 5,5)">
+          <path d="M5,4 L7,6 L3,6 L5,4" />
+        </g>
+      </svg>
+    </button>
+    <button id="left">
+      <svg width="30" height="30" viewBox="0 0 10 10">
+        <g transform="rotate(-90, 5,5)">
+          <path d="M5,4 L7,6 L3,6 L5,4" />
+        </g>
+      </svg>
+    </button>
+    <button id="backward">
+      <svg width="30" height="30" viewBox="0 0 10 10">
+        <g transform="rotate(180, 5,5)">
+          <path d="M5,4 L7,6 L3,6 L5,4" />
+        </g>
+      </svg>
+    </button>
+    <button id="right">
+      <svg width="30" height="30" viewBox="0 0 10 10">
+        <g transform="rotate(90, 5,5)">
+          <path d="M5,4 L7,6 L3,6 L5,4" />
+        </g>
+      </svg>
+    </button>
+    <button id="hold" class="hold">
+      <svg width="30" height="30" viewBox="0 0 10 10">
+        <g transform="rotate(0, 5,5)">
+          <path d="M5,4 L7,6 L3,6 L5,4" />
+        </g>
+      </svg>
+    </button>
+    
+  </div>
+</div>
+
+<div id="end">
+  <button id="retry">Retry</button>
+</div>
+
+<div class= "credits">
+  Made with <i class="fas fa-heart"></i> & 🐓
+</div>
+
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/99/three.min.js'></script>
+  <script  src="./script.js"></script>
+
+  <script>
+    // 페이지 로드 시 웹페이지를 팝업 창에서 열기
+    window.onload = function() {
+      // 팝업 창의 너비, 높이 및 기타 기능을 필요에 따라 조정
+      const popupWindow = window.open('', 'Crossy Road', 'width=800,height=600');
+      
+      // 팝업 창을 화면 중앙에 배치
+      if (window.screen) {
+        const screenWidth = window.screen.width;
+        const screenHeight = window.screen.height;
+        const popupWidth = 800; // 필요에 따라 조정
+        const popupHeight = 600; // 필요에 따라 조정
+  
+        const leftPosition = (screenWidth - popupWidth) / 2;
+        const topPosition = (screenHeight - popupHeight) / 2;
+  
+        popupWindow.moveTo(leftPosition, topPosition);
+      }
+  
+      // 팝업 창에 게임방법과 이미지 추가
+      const popupContent = `
+        <div style="padding: 20px;">
+          <h2>게임 방법</h2>
+          <p>크로시로드는...</p>
+          <img src="game_instructions.png" alt="Game Instructions" style="max-width: 100%; height: auto;">
+        </div>
+      `;
+  
+      popupWindow.document.body.innerHTML = popupContent;
+    };
+  </script>
+  
+  
+</body>
+</html>
