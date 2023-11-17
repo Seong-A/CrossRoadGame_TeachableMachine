@@ -70,9 +70,29 @@
 
     .image-table p {
       margin: 0;
-      font-size: 12px;
-}
+      font-size: 18px;
+    }
+    
+    .image-description-container {
+      display: flex;
+      justify-content: space-between; 
+    }
 
+    .image-description {
+      text-align: center;
+    }
+
+    @font-face {
+    font-family: 'GmarketSansMedium';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    }
+    
+    h2 {
+        font-family: 'GmarketSansMedium', sans-serif;
+        color: #333;
+    }
 
   </style>
   <div class="container">
@@ -84,39 +104,40 @@
       <table>
         <tr>
           <td>
-            <img src="forward.png" alt="Image 1">
-            <p>forward</p>
+            <img src="forward.jpg" alt="Image 1">
+            <p><strong>전진</strong></p>
           </td>
           <td>
-            <img src="backward.png" alt="Image 2">
-            <p>backward</p>
+            <img src="backward.jpg" alt="Image 2">
+            <p><strong>후진</strong></p>
           </td>
           <td>
-            <img src="left.png" alt="Image 3">
-            <p>left</p>
+            <img src="left.jpg" alt="Image 3">
+            <p><strong>좌측</strong></p>
           </td>
           <td>
-            <img src="right.png" alt="Image 4">
-            <p>right</p>
+            <img src="right.jpg" alt="Image 4">
+            <p><strong>우측</strong></p>
           </td>
           <td>
-            <img src="hold.png" alt="Image 5">
-            <p>hold</p>
+            <img src="hold.jpg" alt="Image 5">
+            <p><strong>정지</strong></p>
           </td>
         </tr>
+      </table>
     </div>
   </div>
   <div id="label-container"></div>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8/dist/teachablemachine-pose.min.js"></script>
-  <script src="./config.js"></script>
   <script type="text/javascript">
-      const URL = MODEL_URL;
+      const URL = "https://teachablemachine.withgoogle.com/models/94QdoVaFK/";
       let model, webcam, ctx, labelContainer, maxPredictions;
       let captureInterval = 400; // 0.4초에 한 번 캡쳐하도록 조정
       let lastCaptureTime = 0;
+      let gameRunning = false;
 
-  async function init() { // 웹페이지 로드될 때 실행되는 초기화 함수, 모델 로드하고 웹캠 설정
+      async function init() { // 웹페이지 로드될 때 실행되는 초기화 함수, 모델 로드하고 웹캠 설정
       const modelURL = URL + "model.json";
       const metadataURL = URL + "metadata.json";
 
@@ -138,13 +159,36 @@
       }
 
       lastCaptureTime = Date.now();
+      gameRunning = true;
 
       window.requestAnimationFrame(loop);
   }
 
+  function stopGame() {
+    gameRunning = false;
+  }
+
+  async function retryGame() {
+      stopGame();
+
+      // 웹캠 다시 시작
+      const size = 200;
+      const flip = true;
+      webcam = new tmPose.Webcam(size, size, flip); // width, height, flip
+      await webcam.setup();
+      await webcam.play();
+
+      lastCaptureTime = Date.now(); // 마지막 캡처 시간 초기화
+      gameRunning = true; // 게임 다시 시작
+
+      window.requestAnimationFrame(loop); // 프레임 업데이트 다시 시작
+  }
+      
+
   async function loop(timestamp) { //프레임 업데이트
       webcam.update(); // update the webcam frame
       const currentTime = Date.now();
+      if (!gameRunning) return;
 
       // 모션 결과 확인 (0.4초 시간마다 새로운 동작 감지)
       if (currentTime - lastCaptureTime >= captureInterval) {
@@ -165,6 +209,7 @@
     const { pose, posenetOutput } = await model.estimatePose(webcam.canvas);
     // Prediction 2: 추정된 포즈 정보를 모델에 입력으로 주고 모델로부터 동작 예측
     const prediction = await model.predict(posenetOutput);
+    if (!gameRunning) return;
 
     let maxProbability = 0; // 예측된 클래스 중 최대 확률 추적
     let maxClassIndex = -1; // 최대 확률을 갖는 클래스 인덱스 추적
@@ -213,6 +258,11 @@
             }
         }
     }
+
+    function endGame() {
+        stopGame(); 
+
+    }
 </script>
 
   
@@ -259,12 +309,11 @@
         </g>
       </svg>
     </button>
-    
   </div>
 </div>
 
 <div id="end">
-  <button id="retry">Retry</button>
+  <button id="retry" onclick="retryGame()">Retry</button>
 </div>
 
 <div class= "credits">
@@ -285,7 +334,7 @@
         const screenWidth = window.screen.width;
         const screenHeight = window.screen.height;
         const popupWidth = 800; // 필요에 따라 조정
-        const popupHeight = 600; // 필요에 따라 조정
+        const popupHeight = 800; // 필요에 따라 조정
   
         const leftPosition = (screenWidth - popupWidth) / 2;
         const topPosition = (screenHeight - popupHeight) / 2;
@@ -295,13 +344,50 @@
   
       // 팝업 창에 게임방법과 이미지 추가
       const popupContent = `
-        <div style="padding: 20px;">
+        <div style="padding: 20px; font-family: 'GmarketSansMedium', sans-serif;">
+          <h2>게임 설명</h2>
+          <p>TM CrossRoad 게임은 전후좌우로 이동하며 움직이거나 고정된 다양한 장애물을 피하면서 길을 건너는 게임이다! </p>
           <h2>게임 방법</h2>
-          <p>크로시로드는...</p>
-          <img src="game_instructions.png" alt="Game Instructions" style="max-width: 100%; height: auto;">
+          <p style="color:red" align="center">상체 전체가 보이도록 해주세요!</p>
+          <div class="image-table">
+            <table align="center">
+              <tr align="center">
+                <td style="padding:10px 30px 30px 30px;">
+                  <img src="forward.jpg" alt="Forward Image" style="max-width: 120px; max-height: 120px; border: 2px solid #000;">
+                  <p style="color:hotpink" align="center"><strong>전진</strong></p>
+                  <p align="center">팔을 W모양으로 취해준다</p>
+                </td>
+                <td style="padding:10px 30px 30px 30px;">
+                  <img src="backward.jpg" alt="Backward Image" style="max-width: 120px; max-height: 113px; border: 2px solid #000;">
+                  <p style="color:hotpink" align="center"><strong>후진</strong></p>
+                  <p align="center">팔을 O모양으로 취해준다</p>
+                </td>
+              </tr>
+            </table>
+            <table align="center">
+              <tr align="center">
+                <td style="padding:10px 30px 30px 30px;">
+                  <img src="left.jpg" alt="Left Image" style="max-width: 120px; max-height: 120px; border: 2px solid #000;">
+                  <p style="color:hotpink" align="center"><strong>좌측</strong></p>
+                  <p align="center">왼손을 들어준다</p>
+                </td>
+                <td style="padding:10px 30px 30px 30px;">
+                  <img src="right.jpg" alt="Right Image" style="max-width: 120px; max-height: 120px; border: 2px solid #000;">
+                  <p style="color:hotpink" align="center"><strong>우측</strong></p>
+                  <p align="center">오른손을 들어준다</p>
+                </td>
+                <td style="padding:10px 30px 30px 30px;">
+                  <img src="hold.jpg" alt="Hold Image" style="max-width: 120px; max-height: 120px; border: 2px solid #000;">
+                  <p style="color:hotpink" align="center"><strong>정지</strong></p>
+                  <p align="center">차렷자세를 취해준다</p>
+                </td>
+              </tr>
+            </table>
+          </div>
         </div>
-      `;
-  
+
+`;
+
       popupWindow.document.body.innerHTML = popupContent;
     };
   </script>
@@ -309,3 +395,4 @@
   
 </body>
 </html>
+
