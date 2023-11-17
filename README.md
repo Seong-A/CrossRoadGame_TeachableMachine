@@ -12,21 +12,23 @@ Using CrossRoadGame Base Code - https://github.com/GeekBoySupreme/crossy-road
 ## Teachable Machine Model Training
 - forward (전진)
   
-![forward](https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/a0a1654f-579c-4eb9-90a6-a529f708aa67)
+<img width="150" alt="forward" src="https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/a0a1654f-579c-4eb9-90a6-a529f708aa67">
 
 - backward (후진)
   
-![backward](https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/eec35915-032f-4e45-b7fd-c2e7210b81a8)
+<img width="150" alt="backward" src="https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/eec35915-032f-4e45-b7fd-c2e7210b81a8">
 
 - left (좌측)
 
-![left](https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/881c8a80-56b6-4d9c-8de2-8e2adcd1cc10)
+<img width="150" alt="left" src="https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/881c8a80-56b6-4d9c-8de2-8e2adcd1cc10">
 
 - right (우측)
-![right](https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/bc46c4f6-8353-483f-92a9-4ad471ee79ea)
+  
+<img width="150" alt="right" src="https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/bc46c4f6-8353-483f-92a9-4ad471ee79ea">
 
 - hold (멈춤)
-![hold](https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/b4348d16-0921-4abe-be72-1a7b1e14cce7)
+  
+<img width="150" alt="hold" src="https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/b4348d16-0921-4abe-be72-1a7b1e14cce7">
 
 
 </br></br>
