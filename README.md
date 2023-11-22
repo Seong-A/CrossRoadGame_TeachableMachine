@@ -14,6 +14,9 @@ Using CrossRoadGame Base Code - https://github.com/GeekBoySupreme/crossy-road
 |:---:|:---:|:---:|:---:|:---:|
 |<img width="150" alt="forward" src="https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/a0a1654f-579c-4eb9-90a6-a529f708aa67">|<img width="150" alt="backward" src="https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/eec35915-032f-4e45-b7fd-c2e7210b81a8">|<img width="150" alt="left" src="https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/881c8a80-56b6-4d9c-8de2-8e2adcd1cc10">|<img width="150" alt="right" src="https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/bc46c4f6-8353-483f-92a9-4ad471ee79ea">|<img width="150" alt="hold" src="https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/b4348d16-0921-4abe-be72-1a7b1e14cce7">|
 
+## Actual Execution Screen
+<img width="700" alt="스크린샷 2023-11-20 오후 3 08 16" src="https://github.com/Seong-A/CrossRoadGame_TeachableMachine/assets/83965377/53f42cac-65b4-4905-b626-8f8c209d682f">
+
 </br></br>
 ![crossy road](https://user-images.githubusercontent.com/15321738/89792114-c0aad600-db41-11ea-92de-437b0aae65a1.PNG)
 
