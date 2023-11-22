@@ -1,5 +1,6 @@
 const counterDOM = document.getElementById('counter');  
 const endDOM = document.getElementById('end');  
+const gameOverMusic = document.getElementById('gameOverMusic');
 
 const scene = new THREE.Scene();
 
@@ -609,6 +610,8 @@ function animate(timestamp) {
       if(chickenMaxX > carMinX && chickenMinX < carMaxX) {
         gameOver = true;
         endDOM.style.visibility = 'visible';
+
+        gameOverMusic.play();
       }
     });
 

@@ -5,6 +5,13 @@
   <title>Crossy Road</title>
   <link rel="stylesheet" href="./style.css">
   <link rel="icon" href="./favicon.ico">
+  <audio id="backgroundMusic" loop>
+    <source src="move.mp3" type="audio/mp3">
+  </audio>
+  <audio id="gameOverMusic">
+    <source src="gameover.mp3" type="audio/mp3">
+  </audio>
+  
   
   <style>
     body {
@@ -19,7 +26,7 @@
 
     #title {
       font-size: 24px;
-      margin-top: 50px;
+      margin-top: 30px;
       margin-bottom: 20px;
       color: black;
     }
@@ -28,7 +35,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-top: 400px;
+      margin-top: 350px;
       border: 2px solid #000; 
       padding: 10px; 
       border-radius: 10px; 
@@ -136,6 +143,8 @@
       let captureInterval = 400; // 0.4초에 한 번 캡쳐하도록 조정
       let lastCaptureTime = 0;
       let gameRunning = false;
+      let soundPlayed = false;
+      let backgroundMusic = document.getElementById("backgroundMusic");
 
       async function init() { // 웹페이지 로드될 때 실행되는 초기화 함수, 모델 로드하고 웹캠 설정
       const modelURL = URL + "model.json";
@@ -170,7 +179,7 @@
 
   async function retryGame() {
       stopGame();
-
+      
       // 웹캠 다시 시작
       const size = 200;
       const flip = true;
@@ -180,6 +189,11 @@
 
       lastCaptureTime = Date.now(); // 마지막 캡처 시간 초기화
       gameRunning = true; // 게임 다시 시작
+
+      labelContainer.innerHTML = ''; // 라벨 컨테이너 초기화
+      for (let i = 0; i < maxPredictions; i++) {
+          labelContainer.appendChild(document.createElement("div"));
+      }
 
       window.requestAnimationFrame(loop); // 프레임 업데이트 다시 시작
   }
@@ -201,10 +215,24 @@
 
   init();
 
+  function playBackgroundMusic() {
+    if (!soundPlayed) {
+      backgroundMusic.play();
+      soundPlayed = true;
+    }
+  }
 
+  function stopBackgroundMusic() {
+    backgroundMusic.pause();
+    backgroundMusic.currentTime = 0;
+  }
 
+  function playGameOverMusic() {
+    const gameOverMusic = document.getElementById("gameOverMusic");
+    gameOverMusic.play();
+  }
 
-    async function predict() {
+  async function predict() {
     // Prediction #1: 웹캠에서 현재 프레임 가져와 사람 포즈 추정
     const { pose, posenetOutput } = await model.estimatePose(webcam.canvas);
     // Prediction 2: 추정된 포즈 정보를 모델에 입력으로 주고 모델로부터 동작 예측
@@ -225,23 +253,27 @@
         switch (maxClassIndex) {
             case 0: // 'forward' class
                 move('forward');
+                playBackgroundMusic();
                 break;
             case 1: // 'backward' class
                 move('backward');
+                stopBackgroundMusic();
                 break;
             case 2: // 'left' class
                 move('left');
+                stopBackgroundMusic();
                 break;
             case 3: // 'right' class
                 move('right');
+                stopBackgroundMusic();
                 break;
             case 4:
                 move('hold');
+                stopBackgroundMusic();
                 break;
-            // 필요한 경우 다른 클래스에 대한 추가 case를 추가할 수 있습니다.
         }
+        soundPlayed = false;
     }
-
     // finally draw the poses
     drawPose(pose);
 }
@@ -261,11 +293,11 @@
 
     function endGame() {
         stopGame(); 
-
+        stopBackgroundMusic();
     }
+    
 </script>
 
-  
   <script src="https://kit.fontawesome.com/622afd0c30.js"></script>
 
 </head>
@@ -313,7 +345,7 @@
 </div>
 
 <div id="end">
-  <button id="retry" onclick="retryGame()">Retry</button>
+  <button id="retry" onclick="retryGame()" >Retry</button>
 </div>
 
 <div class= "credits">
